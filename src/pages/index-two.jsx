@@ -70,6 +70,7 @@ const IndexTwo = ({ activeTabIndex = 0, navClass = "navbar-white" }) => {
     <React.Fragment>
       <Navbar navClass={navClass} />
       {/* Hero Start  */}
+
       <section className="relative table w-full py-36 lg:py-44 overflow-hidden zoom-image">
         <div
           style={{ backgroundImage: `url(${BackgroudImage})` }}
@@ -211,7 +212,7 @@ const IndexTwo = ({ activeTabIndex = 0, navClass = "navbar-white" }) => {
       {/* Hero End */}
 
       <section className="relative md:pb-24 pb-16" id="sectionRooms">
-        {rooms.length > 0 && <PropertyTwo rooms={rooms} />}
+        {rooms.length > 0 && <PropertyTwo rooms={rooms.slice(0, 6)} />}
 
         <About />
 
