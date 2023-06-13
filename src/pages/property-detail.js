@@ -4,20 +4,132 @@ import withRouter from "../component/withrouter";
 import Navbar from "../component/Navbar";
 import Switcher from "../component/Switcher";
 import Footer from "../component/Footer";
+import Modal from "react-modal";
+import PropTypes from "prop-types";
 
 import Lightbox from "react-18-image-lightbox";
 import "react-18-image-lightbox/style.css";
 
 import { useEffect } from "react";
-import { detalleHabitacion } from "../services/reservacion.service";
+import {
+  crearReservacion,
+  detalleHabitacion,
+} from "../services/reservacion.service";
 import { useState } from "react";
 import { BASE_URL } from "../utils/constants";
+import Swal from "sweetalert2";
+import {
+  alertBasic,
+  formatDate,
+  getDateReservations,
+  obtenerCadenaParaQR,
+} from "../utils/extends";
+import { Button } from "react-scroll";
+import DocumentoPDF from "../component/DocumentPDF";
+import { obtenerUsuario } from "../services/auth.service";
+import { useRef } from "react";
 
 const PropertyDetail = ({ params }) => {
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [habitacion, setHabitacion] = useState({});
   const [urlsImagenes, setUrlsImagenes] = useState([]);
+  const { fechaEntrada, fechaSalida } = getDateReservations();
+  const [viewPDF, setViewPDF] = useState(false);
+
+  const fechaEntradaNew = new Date(fechaEntrada);
+  const fechaSalidaNew = new Date(fechaSalida);
+  const diferenciaTiempo = fechaSalidaNew.getTime() - fechaEntradaNew.getTime();
+  const duracionEstancia = Math.floor(diferenciaTiempo / (1000 * 3600 * 24));
+  const usuario = obtenerUsuario();
+
+  const datos = {
+    entrada: fechaEntradaNew,
+    salida: fechaSalidaNew,
+    fecha_reservacion: new Date(),
+    habitacion: params?.id,
+    habitacionData: habitacion,
+    usuario: usuario?.id,
+    notas: "",
+  };
+
+  const detailReservation = () => {
+    Swal.fire({
+      html: `<div class="reservation-details text-justify ">
+      <h2 class="text-2xl font-bold mb-4 text-center">Detalles de ${
+        habitacion?.titulo
+      }</h2>
+ 
+      <div class="flex mb-2">
+      <span class="w-2/3 font-bold">Tipo:</span>
+        <span class="w-1/3">${habitacion?.categoria}</span>
+      </div>
+      <div class="flex mb-2">
+      <span class="w-2/3 font-bold">Precio:</span>
+      <span class="w-1/3">$${habitacion?.precio} por noche</span>
+      </div>
+      <div class="flex mb-2">
+      <span class="w-2/3 font-bold">CheckIn:</span>
+      <span class="w-1/3">${formatDate(fechaEntradaNew)}</span>
+      </div>
+      <div class="flex mb-2">
+      <span class="w-2/3 font-bold">CheckOut:</span>
+      <span class="w-1/3">${formatDate(fechaSalidaNew)}</span>
+      </div>
+      <div class="flex mb-2">
+        <span class="w-2/3 font-bold">Duración de la estancia:</span>
+        <span class="w-1/3">${duracionEstancia} ${
+        duracionEstancia > 1 ? "días" : "día"
+      } </span>
+      </div>
+      <div class="flex mb-2 border-2">
+      <textarea placeholder="Nota: " id="nota-text" rows="6" cols="50" class="p-4"></textarea>
+
+    </div>
+    </div>`,
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirmar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        datos.notas = document.getElementById("nota-text").value;
+        const response = await crearReservacion(datos);
+        if (response?.status === 200) {
+          setViewPDF(true);
+          const qrCodeValue = obtenerCadenaParaQR(datos);
+          const qrCodeImageUrl = `https://chart.googleapis.com/chart?cht=qr&chl=${qrCodeValue}&chs=300x300`;
+
+          Swal.fire({
+            title: "Reservación exitosa",
+            showConfirmButton: false,
+            html: `
+            <h1 class="text-center text-sm"> Presentar este Codigo QR al momento de hacer CheckIn</h1>
+            <img
+              src="${qrCodeImageUrl}"
+              alt="Código QR"
+              class="m-auto mt-2 mb-2"
+            />
+            <span class="text-sm"
+              >Puedes ver este código nuevamente en el
+              <a href="/mis-reservaciones" class="text-blue-700 hover:text-blue-900">
+                apartado de mis reservaciones</a
+              ></span
+            >
+            <a
+              class="px-4 btn bg-green-600 hover:bg-green-700 text-white rounded-md w-full"
+              href="/"
+              >Continuar</a
+            >
+        `,
+            icon: "success",
+          });
+        }
+      }
+    });
+  };
 
   useEffect(() => {
     const getDetail = async (id) => {
@@ -41,11 +153,10 @@ const PropertyDetail = ({ params }) => {
     setIsOpenMenu(isOpenMenuValue);
     setPhotoIndex(photoIndexValue);
   };
-  console.log(habitacion);
+  console.log(datos);
   return (
     <React.Fragment>
       <Navbar />
-      {/* <!-- Hero Start --> */}
       <section className="relative md:pb-24 pb-16 mt-20">
         <div className="container-fluid">
           <div className="md:flex mt-4">
@@ -297,6 +408,13 @@ const PropertyDetail = ({ params }) => {
                       <Link
                         to="#"
                         className="btn bg-green-600 hover:bg-green-700 text-white rounded-md w-full"
+                        onClick={
+                          usuario
+                            ? detailReservation
+                            : () => {
+                                window.location.href = "/auth-login";
+                              }
+                        }
                       >
                         Reservar ahora
                       </Link>
@@ -324,7 +442,6 @@ const PropertyDetail = ({ params }) => {
           </div>
         </div>
       </section>
-
       {isOpenMenu && (
         <Lightbox
           mainSrc={urlsImagenes[photoIndex]}
@@ -345,7 +462,6 @@ const PropertyDetail = ({ params }) => {
           }
         />
       )}
-
       <Footer />
       <Switcher />
     </React.Fragment>

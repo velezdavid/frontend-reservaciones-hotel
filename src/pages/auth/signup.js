@@ -1,196 +1,215 @@
-import React, { Component } from "react";
-import { Link as Link2 } from "react-router-dom";
+import React, { Component, useState } from "react";
+import { Link, Link as Link2 } from "react-router-dom";
 import Icon from "../../assets/images/logo-icon-64.png";
-import BackgroudImage from "../../assets/images/bg/01.jpg";
+import BackgroudImage from "../../assets/images/hotel/banner.jpg";
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
+import {
+  alertBasic,
+  generateRandomCode,
+  validarCedula,
+} from "../../utils/extends";
+import { persitirUsario, registrar } from "../../services/auth.service";
 
-class Signup extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
+const Signup = () => {
+  const [formValues, setFormValues] = useState({
+    cedula: "",
+    nombre: "",
+    telefono: "",
+    email: "",
+    password: "",
+  });
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormValues((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { cedula, nombre, telefono, email, password } = formValues;
+    if (cedula && nombre && telefono && email && password) {
+      const cedulaValida = validarCedula(cedula);
+      if (cedulaValida.valido) {
+        const data = await registrar(formValues);
+        if (data?.status === 201) {
+          const user = { user: data.data };
+          persitirUsario(user);
+          window.location.href = "/";
+        } else {
+          const params = {
+            title: "Datos no validos",
+            text: data.message,
+            icon: "error",
+          };
+          alertBasic(params);
+        }
+      } else {
+        const params = {
+          title: "Dato incorrecto",
+          text: cedulaValida.mensaje,
+          icon: "error",
         };
-
+        alertBasic(params);
+      }
+    } else {
+      const params = {
+        title: "Campo vacio",
+        text: "Ingrese un correo y una contraseña valida",
+        icon: "info",
+      };
+      alertBasic(params);
     }
-    particlesInit = async (main) => {
-        console.log(main);
-        // initialize the tsParticles instance
-        await loadFull(main);
-    };
-    particlesLoaded = (container) => {
-        console.log(container);
-    };
-    componentDidMount() {
-        window.scrollTo(0, 0)
-    }
-    render() {
-        return (
-            <React.Fragment>
-                <section className="md:h-screen py-36 flex items-center relative overflow-hidden zoom-image">
-                    <div
-                        style={{ backgroundImage: `url(${BackgroudImage})` }}
-                        className="absolute inset-0 image-wrap z-1 bg-no-repeat bg-center bg-cover"></div>
-                    <Particles
-                        id="tsparticles"
-                        init={this.particlesInit}
-                        loaded={this.particlesLoaded}
-                        className="absolute inset-0 bg-gradient-to-b from-transparent to-black z-2"
-                        options={{
-                            "particles": {
-                                "number": {
-                                    "value": 250,
-                                    "density": {
-                                        "enable": false,
-                                        "value_area": 800
-                                    }
-                                },
-                                "color": {
-                                    "value": "#ffffff"
-                                },
-                                "shape": {
-                                    "type": "circle",
-                                    "stroke": {
-                                        "width": 0,
-                                        "color": "#000000"
-                                    },
-                                    "polygon": {
-                                        "nb_sides": 36
-                                    },
-                                    "image": {
-                                        "src": "",
-                                        "width": 1000,
-                                        "height": 1000
-                                    }
-                                },
-                                "opacity": {
-                                    "value": 0.5,
-                                    "random": false,
-                                    "anim": {
-                                        "enable": false,
-                                        "speed": 0.5,
-                                        "opacity_min": 1,
-                                        "sync": false
-                                    }
-                                },
-                                "size": {
-                                    "value": 3.2,
-                                    "random": true,
-                                    "anim": {
-                                        "enable": false,
-                                        "speed": 20,
-                                        "size_min": 0.1,
-                                        "sync": false
-                                    }
-                                },
-                                "line_linked": {
-                                    "enable": false,
-                                    "distance": 100,
-                                    "color": "#ffffff",
-                                    "opacity": 0.4,
-                                    "width": 2
-                                },
-                                "move": {
-                                    "enable": true,
-                                    "speed": 1,
-                                    "direction": "bottom",
-                                    "random": false,
-                                    "straight": false,
-                                    "out_mode": "out",
-                                    "bounce": false,
-                                    "attract": {
-                                        "enable": false,
-                                        "rotateX": 800,
-                                        "rotateY": 1200
-                                    }
-                                }
-                            },
-                            "interactivity": {
-                                "detect_on": "canvas",
-                                "events": {
-                                    "onhover": {
-                                        "enable": false,
-                                        "mode": "repulse"
-                                    },
-                                    "onclick": {
-                                        "enable": false,
-                                        "mode": "push"
-                                    },
-                                    "resize": true
-                                },
-                                "modes": {
-                                    "grab": {
-                                        "distance": 200,
-                                        "line_linked": {
-                                            "opacity": 1
-                                        }
-                                    },
-                                    "bubble": {
-                                        "distance": 400,
-                                        "size": 40,
-                                        "duration": 2,
-                                        "opacity": 8,
-                                        "speed": 3
-                                    },
-                                    "repulse": {
-                                        "distance": 71,
-                                        "duration": 0.4
-                                    },
-                                    "push": {
-                                        "particles_nb": 4
-                                    },
-                                    "remove": {
-                                        "particles_nb": 2
-                                    }
-                                }
-                            },
-                            "retina_detect": true
-                        }}
-                    />
-                    <div className="container z-3">
-                        <div className="flex justify-center">
-                            <div className="max-w-[400px] w-full m-auto p-6 bg-white dark:bg-slate-900 shadow-md dark:shadow-gray-700 rounded-md">
-                                <Link2 to="/"><img src={Icon} className="mx-auto" alt="" /></Link2>
-                                <h5 className="my-6 text-xl font-semibold">Signup</h5>
-                                <form className="ltr:text-left rtl:text-right">
-                                    <div className="grid grid-cols-1">
-                                        <div className="mb-4">
-                                            <label className="font-semibold" htmlFor="RegisterName">Your Name:</label>
-                                            <input id="RegisterName" type="text" className="form-input mt-3" placeholder="Harry" />
-                                        </div>
+  };
 
-                                        <div className="mb-4">
-                                            <label className="font-semibold" htmlFor="LoginEmail">Email Address:</label>
-                                            <input id="LoginEmail" type="email" className="form-input mt-3" placeholder="name@example.com" />
-                                        </div>
+  return (
+    <React.Fragment>
+      <section className="md:h-screen py-36 flex items-center relative overflow-hidden zoom-image">
+        <div
+          style={{ backgroundImage: `url(${BackgroudImage})` }}
+          className="absolute inset-0 image-wrap z-1 bg-no-repeat bg-center bg-cover"
+        ></div>
 
-                                        <div className="mb-4">
-                                            <label className="font-semibold" htmlFor="LoginPassword">Password:</label>
-                                            <input id="LoginPassword" type="password" className="form-input mt-3" placeholder="Password:" />
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <div className="flex items-center w-full mb-0">
-                                                <input className="form-checkbox text-green-600 rounded w-4 h-4 me-2 border border-inherit" type="checkbox" value="" id="AcceptT&C" />
-                                                <label className="form-check-label text-slate-400" htmlFor="AcceptT&C">I Accept <Link2 to="#" className="text-green-600">Terms And Condition</Link2></label>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <Link2 to="#" className="btn bg-green-600 hover:bg-green-700 text-white rounded-md w-full">Register</Link2>
-                                        </div>
-
-                                        <div className="text-center">
-                                            <span className="text-slate-400 me-2">Already have an account ? </span> <Link2 to="/auth-login" className="text-black dark:text-white font-bold">Sign in</Link2>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+        <div className="container z-3">
+          <div className="flex justify-center">
+            <div className="max-w-[400px] w-full m-auto p-6 bg-white dark:bg-slate-900 shadow-md dark:shadow-gray-700 rounded-md">
+              <Link2 to="/">
+                <img src={Icon} className="mx-auto" alt="" />
+              </Link2>
+              <h5 className="my-4 text-xl font-semibold text-center">
+                Registro
+              </h5>
+              <div className="h-96 overflow-y-auto">
+                <form className="ltr:text-left rtl:text-right">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="mb-2 col-span-2">
+                      <label className="font-semibold" htmlFor="Cedula">
+                        Cédula:
+                      </label>
+                      <input
+                        id="Cedula"
+                        type="number"
+                        className="form-input mt-2"
+                        placeholder="Cédula"
+                        value={formValues.cedula}
+                        onChange={handleInputChange}
+                        name="cedula"
+                      />
                     </div>
-                </section>
-            </React.Fragment>
-        );
-    }
-}
+
+                    <div className="mb-2">
+                      <label className="font-semibold" htmlFor="RegisterName">
+                        Nombre completo:
+                      </label>
+                      <input
+                        id="RegisterName"
+                        type="text"
+                        className="form-input mt-2"
+                        placeholder="Manuel Lucas"
+                        value={formValues.nombre}
+                        onChange={handleInputChange}
+                        name="nombre"
+                      />
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="font-semibold" htmlFor="Telefono">
+                        Teléfono:
+                      </label>
+                      <input
+                        id="Telefono"
+                        type="number"
+                        className="form-input mt-2"
+                        placeholder="0932894487"
+                        value={formValues.telefono}
+                        onChange={handleInputChange}
+                        name="telefono"
+                      />
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="font-semibold" htmlFor="LoginEmail">
+                        Correo:
+                      </label>
+                      <input
+                        id="LoginEmail"
+                        type="email"
+                        className="form-input mt-2"
+                        placeholder="name@gmail.com"
+                        value={formValues.email}
+                        onChange={handleInputChange}
+                        name="email"
+                      />
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="font-semibold" htmlFor="LoginPassword">
+                        Contraseña:
+                      </label>
+                      <input
+                        id="LoginPassword"
+                        type="password"
+                        className="form-input mt-2"
+                        placeholder="********"
+                        value={formValues.password}
+                        onChange={handleInputChange}
+                        name="password"
+                      />
+                    </div>
+
+                    <div className="col-span-2 mb-2">
+                      <div className="flex items-center w-full mb-0">
+                        <input
+                          className="form-checkbox text-green-600 rounded w-4 h-4 me-2 border border-inherit"
+                          type="checkbox"
+                          value=""
+                          id="AcceptT&C"
+                        />
+                        <label
+                          className="form-check-label text-slate-400"
+                          htmlFor="AcceptT&C"
+                        >
+                          Acepto{" "}
+                          <Link to="/terms" className="text-green-600">
+                            Términos y Condiciones
+                          </Link>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="col-span-2 mb-2">
+                      <Link
+                        to="#"
+                        className="btn bg-green-600 hover:bg-green-700 text-white rounded-md w-full"
+                        onClick={handleSubmit}
+                      >
+                        Registrarse
+                      </Link>
+                    </div>
+
+                    <div className="col-span-2 text-center">
+                      <span className="text-slate-400 me-2">
+                        ¿Ya tienes una cuenta?{" "}
+                      </span>{" "}
+                      <Link2
+                        to="/auth-login"
+                        className="text-black dark:text-white font-bold"
+                      >
+                        Iniciar sesión
+                      </Link2>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+};
 
 export default Signup;

@@ -5,32 +5,29 @@ import Footer from "../component/Footer";
 import Switcher from "../component/Switcher";
 import PropertyTwo from "../component/Property-two";
 import { useEffect } from "react";
-import { habitacionesDisponiblesPorCategoria } from "../services/reservacion.service";
+import {
+  habitacionesDisponibles,
+  habitacionesDisponiblesPorCategoria,
+} from "../services/reservacion.service";
 import { useState } from "react";
 import BackgroudImage from "../assets/images/hotel/banner.jpg";
+import CheckIn from "../component/Check-In";
+import { setDateReservations } from "../utils/extends";
 
 const Grid = () => {
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
     const getRooms = async () => {
-      const data = await habitacionesDisponiblesPorCategoria("Simple");
+      const data = await habitacionesDisponibles();
       if (data?.status === 200) {
         setRooms(data?.data?.data);
+        setDateReservations();
       }
     };
     getRooms();
     window.scrollTo(0, 0);
   }, []);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const selectElement = document.querySelector("#choices-catagory-rent");
-    const selectedValue = encodeURIComponent(selectElement.value);
-    const data = await habitacionesDisponiblesPorCategoria(selectedValue);
-    if (data?.status === 200) {
-      setRooms(data?.data?.data);
-    }
-  };
 
   return (
     <React.Fragment>
@@ -63,55 +60,13 @@ const Grid = () => {
         </div>
       </div>
       <div className="container relative -mt-16 z-1">
-        <div className="grid grid-cols-1 lg:w-1/2 lg:m-auto">
-          <form className="p-6 bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-gray-700">
-            <div className="registration-form text-dark text-start">
-              <div className="grid lg:grid-cols-2 grid-cols-1 gap-6">
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="buy-properties"
-                    className="form-label text-slate-900 dark:text-white font-medium"
-                  >
-                    Selecciona categoria:
-                  </label>
-                  <div className="filter-search-form relative flex flex-1 text-gray-400 filter-border mt-2 ">
-                    <i className="uil uil-estate icons"></i>
-                    <select
-                      className="form-select flex-1 bg-gray-50 dark:bg-slate-800"
-                      data-trigger
-                      name="choices-catagory"
-                      id="choices-catagory-rent"
-                      aria-label="Default select example"
-                    >
-                      <option value="Simple" defaultValue>
-                        Simple
-                      </option>
-                      <option value="Doble">Doble</option>
-                      <option value="Triple">Triple</option>
-                      <option value="Familiar">Familiar</option>
-                      <option value="Familiar + Plus">Familiar + Plus</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="lg:mt-8">
-                  <input
-                    type="submit"
-                    id="search-rent"
-                    name="search"
-                    onClick={handleSubmit}
-                    className="btn bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700 text-white searchbtn submit-btn w-full !h-12 rounded cursor-pointer"
-                    value="Buscar"
-                  />
-                </div>
-              </div>
-            </div>
-          </form>
+        <div className="grid grid-cols-1">
+          <CheckIn setRooms={setRooms} />
         </div>
       </div>
 
-      <section className="relative lg:py-24 py-16">
-        <PropertyTwo rooms={rooms} hideTitle={true} />
+      <section className="relative lg:py-24 py-16" id="sectionRooms">
+        <PropertyTwo rooms={rooms} />
       </section>
       {/* <!-- End --> */}
       <Footer />

@@ -3,7 +3,9 @@ import { NavLink, Link } from "react-router-dom";
 
 import LogoLight from "../assets/images/logo-light.png";
 import LogoDark from "../assets/images/logo-dark.png";
-import { User } from "react-feather";
+import { LogOut, User } from "react-feather";
+import { cerrarSesion, obtenerUsuario } from "../services/auth.service";
+import { Redirect } from "react-router-dom";
 
 class Navbar extends Component {
   constructor(props) {
@@ -11,12 +13,15 @@ class Navbar extends Component {
     this.state = {
       isOpenMenu: true,
       videoModal: false,
+      usuario: {},
     };
 
     this.openModal = this.openModal.bind(this);
     this.toggleMenu = this.toggleMenu.bind(this);
 
     window.addEventListener("scroll", this.windowScroll);
+
+    this.state.usuario = obtenerUsuario();
   }
 
   /**
@@ -240,24 +245,39 @@ class Navbar extends Component {
             {/* <!-- End Mobile Toggle --> */}
 
             {/* <!-- Login button Start --> */}
-            <ul className="buy-button list-none mb-0">
-              <li className="inline mb-0">
-                <Link
-                  to="/auth-login"
-                  className="btn btn-icon bg-green-600 hover:bg-green-700 border-green-600 dark:border-green-600 text-white rounded-full"
-                >
-                  <User className="h-4 w-4 stroke-[3]"></User>
-                </Link>
-              </li>
-              <li className="sm:inline ps-1 mb-0 hidden">
-                <Link
-                  to="/auth-signup"
-                  className="btn bg-green-600 hover:bg-green-700 border-green-600 dark:border-green-600 text-white rounded-full"
-                >
-                  Signup
-                </Link>
-              </li>
-            </ul>
+            {!this.state.usuario?.jwt && (
+              <ul className="buy-button list-none mb-0">
+                <li className="inline mb-0">
+                  <Link
+                    to="/auth-login"
+                    className="btn btn-icon bg-green-600 hover:bg-green-700 border-green-600 dark:border-green-600 text-white rounded-full"
+                  >
+                    <User className="h-4 w-4 stroke-[3]"></User>
+                  </Link>
+                </li>
+
+                <li className="sm:inline ps-1 mb-0 hidden">
+                  <Link
+                    to="/auth-signup"
+                    className="btn bg-green-600 hover:bg-green-700 border-green-600 dark:border-green-600 text-white rounded-full"
+                  >
+                    Registro
+                  </Link>
+                </li>
+              </ul>
+            )}
+            {this.state.usuario?.jwt && (
+              <ul className="buy-button list-none mb-0">
+                <li className="inline mb-0">
+                  <Link
+                    onClick={cerrarSesion}
+                    className="btn btn-icon bg-green-600 hover:bg-green-700 border-green-600 dark:border-green-600 text-white rounded-full"
+                  >
+                    <LogOut className="h-4 w-4 stroke-[3]"></LogOut>
+                  </Link>
+                </li>
+              </ul>
+            )}
             {/* <!--Login button End--> */}
 
             <div id="navigation" className={`${toggleClass}`}>
@@ -279,229 +299,20 @@ class Navbar extends Component {
                   <Link to="/index-two" className="sub-menu-item">
                     Inicio
                   </Link>
-                  {/* <span className="menu-arrow"></span>
-                  <ul className="submenu">
-                    <li>
-                      <Link to="/index" className="sub-menu-item">
-                        Hero One
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/index-two" className="sub-menu-item">
-                        Hero Two
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/index-three" className="sub-menu-item">
-                        Hero Three
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/index-four" className="sub-menu-item">
-                        Hero Four
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/index-five" className="sub-menu-item">
-                        Hero Five{" "}
-                      </Link>
-                    </li>
-                  </ul> */}
                 </li>
 
-                {/* <li>
-                  <NavLink
-                    to="/buy"
-                    activeclassname="active"
-                    className="sub-menu-item"
-                  >
-                    Promociones
-                  </NavLink>
-                </li> */}
-
-                {/* <li>
-                  <Link to="/sell" className="sub-menu-item">
-                    Habitaciones
+                {this.state.usuario?.jwt && (
+                  <li className="has-submenu parent-parent-menu-item">
+                    <Link to="/grid" className="sub-menu-item">
+                      Habitaciones
+                    </Link>
+                  </li>
+                )}
+                <li>
+                  <Link to="/list-map" className="sub-menu-item">
+                    Mis reservaciones
                   </Link>
-                </li> */}
-
-                <li className="has-submenu parent-parent-menu-item">
-                  <Link to="/grid" className="sub-menu-item">
-                    Habitaciones
-                  </Link>
-                  {/*  <span className="menu-arrow"></span>
-                  <ul className="submenu">
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="/grid"> Habitaciones </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link to="/grid" className="sub-menu-item">
-                            Grid Listing
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/grid-sidebar" className="sub-menu-item">
-                            Grid Sidebar{" "}
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/grid-map" className="sub-menu-item">
-                            Grid With Map
-                          </Link>
-                        </li>
-                      </ul> 
-                    </li>
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="#"> List View </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link to="/list" className="sub-menu-item">
-                            List Listing
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/list-sidebar" className="sub-menu-item">
-                            List Sidebar{" "}
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/list-map" className="sub-menu-item">
-                            List With Map
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="#"> Property Detail </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link
-                            to="/property-detail/1"
-                            className="sub-menu-item"
-                          >
-                            Property Detail
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>*/}
                 </li>
-
-                {/* <li className="has-submenu parent-parent-menu-item">
-                  <Link to="#">Pages</Link>
-                  <span className="menu-arrow"></span>
-                  <ul className="submenu">
-                    <li>
-                      <Link to="/aboutus" className="sub-menu-item">
-                        About Us
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/features" className="sub-menu-item">
-                        Featues
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/pricing" className="sub-menu-item">
-                        Pricing
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="/faqs" className="sub-menu-item">
-                        Faqs
-                      </Link>
-                    </li>
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="#"> Auth Pages </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link to="/auth-login" className="sub-menu-item">
-                            Login
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/auth-signup" className="sub-menu-item">
-                            Signup
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to="/auth-reset-password"
-                            className="sub-menu-item"
-                          >
-                            Reset Password
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="#"> Utility </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link to="/terms" className="sub-menu-item">
-                            Terms of Services
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/privacy" className="sub-menu-item">
-                            Privacy Policy
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="#"> Blog </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link to="/blogs" className="sub-menu-item">
-                            {" "}
-                            Blogs
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/blog-sidebar" className="sub-menu-item">
-                            {" "}
-                            Blog Sidebar
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/blog-detail" className="sub-menu-item">
-                            {" "}
-                            Blog Detail
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="has-submenu parent-menu-item">
-                      <Link to="#"> Special </Link>
-                      <span className="submenu-arrow"></span>
-                      <ul className="submenu">
-                        <li>
-                          <Link to="/comingsoon" className="sub-menu-item">
-                            Comingsoon
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/maintenance" className="sub-menu-item">
-                            Maintenance
-                          </Link>
-                        </li>
-                        <li>
-                          <Link to="/404" className="sub-menu-item">
-                            404! Error
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </li> */}
-
                 <li>
                   <Link to="/contact" className="sub-menu-item">
                     Contactos

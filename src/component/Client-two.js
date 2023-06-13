@@ -86,7 +86,7 @@ const ClientTwo = () => {
                           {Array.from(
                             { length: estrellas[el.attributes.calificacion] },
                             (_, index) => (
-                              <li className="inline ms-1">
+                              <li className="inline ms-1" key={index}>
                                 <i className="mdi mdi-star"></i>
                               </li>
                             )
